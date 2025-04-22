@@ -3,6 +3,10 @@ extends ../layouts/page.pug
 block content
   div
     a(href='/courses/new') New Course
+  div
+    form(action='/courses', method='get')
+      input(type='search', name='term', value = term)
+      input(type='submit', value='search')
 
   each course in courses
     div
