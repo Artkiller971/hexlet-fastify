@@ -1,10 +1,14 @@
 html
   body
+    if error
+     p= error.message
+
+
     form(action = '/courses', method = 'post')
       div
         label Название:
-          input(type = 'text', name = 'title')
+          input(type = 'text', name = 'title', value = title)
       div
         label Описание:
-          textarea(name='description', required = true)
+          input(name='description', required = true, value = description)
       input(type = 'submit', value = 'Создать')

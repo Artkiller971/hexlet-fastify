@@ -8,11 +8,13 @@
     "test": "test"
   },
   "dependencies": {
+    "@fastify/formbody": "^8.0.2",
     "@fastify/view": "^11.0.0",
     "fastify": "^5.0.0",
     "fastify-cli": "^7.4.0",
     "pug": "^3.0.3",
-    "sanitize-html": "^2.16.0"
+    "sanitize-html": "^2.16.0",
+    "yup": "^1.6.1"
   },
   "scripts": {
     "dev": "node src/index.js"
