@@ -4,6 +4,7 @@ import formbody from '@fastify/formbody';
 import pug from 'pug';
 import sanitize from 'sanitize-html';
 import yup from 'yup';
+import addRoutes from './routes/index.js'
 
 const state = {
   courses: [
@@ -26,13 +27,7 @@ const state = {
   users: [],
 };
 
-const routes = {
-  usersPath: () => '/u',
-  newUserPath: () => '/users/new',
-  coursesPath: () => '/courses',
-  coursePath: (id) => `/courses/${id}`,
-  newCoursePath: () => '/courses/new',
-}
+
 
 const app = fastify();
 const port = 3000;
@@ -40,148 +35,9 @@ const port = 3000;
 await app.register(view, { engine: { pug } });
 await app.register(formbody);
 
+await addRoutes(app, state);
+
 app.get('/', (req, res) => res.view('src/views/index'));
-
-app.get(routes.coursesPath(), (req, res) => {
-  const term = req.query.term ?? '';
-
-
-  const data = state.courses.filter((course) => course.title.toLowerCase().includes(term.toLowerCase())
-   || course.description.toLowerCase().includes(term.toLowerCase()));
-  res.view('src/views/courses/index', { term, courses: data, routes });
-});
-
-app.get(routes.newCoursePath(), (req, res) => {
-  res.view('src/views/courses/new');
-});
-
-app.post(routes.coursesPath(), {
-  attachValidation: true,
-  schema: {
-    body: yup.object({
-      title: yup.string().min(2, 'Название  не должно быть меньше двух символов'),
-      description: yup.string().min(10, 'Описание не должно быть короче 10 символов'),
-    })
-  },
-  validatorCompiler: ({ schema, method, url, httpPart }) => (data) => {
-    try {
-      const result = schema.validateSync(data);
-      return  {value: result };
-    } catch (e) {
-      return { error: e};
-    }
-  }
-  }, (req, res) => {
-  const id = state.courses[state.courses.length - 1].id + 1;
-
-  const { title, description } = req.body;
-
-  if (req.validationError) {
-    const data = {
-      title, description,
-      error: req.validationError,
-    };
-
-    res.view('src/views/courses/new', data);
-    return;
-  }
-
-  const course = {
-    id,
-    title,
-    description,
-  };
-
-  state.courses.push(course);
-
-  res.redirect(routes.coursesPath());
-})
-
-app.get(routes.coursePath(':id'), (req, res) => {
-  const { id } = req.params
-  const course = state.courses.find(({ id: courseId }) => courseId === parseInt(id));
-  if (!course) {
-    res.code(404).send({ message: 'Course not found' });
-    return;
-  }
-  const data = {
-    course,
-  };
-  res.view('src/views/courses/show', data);
-});
-
-app.get(routes.newUserPath(), (req, res) => {
-  res.view('src/views/users/new');
-});
-
-app.get(routes.usersPath(), (req, res) => {
-  const term = req.query.term ?? '';
-
-
-  const data = state.users.filter((user) => user.name.toLowerCase().includes(term.toLowerCase()))
-  res.view('src/views/users/index', { term, users: data, routes });
-});
-
-app.post(routes.usersPath(), {
-  attachValidation: true,
-  schema: {
-    body: yup.object({
-      name: yup.string().min(2, 'Имя должно быть не меньше двух символов'),
-      email: yup.string().email(),
-      password: yup.string().min(5),
-      passwordConfirmation: yup.string().min(5),
-    }),
-  },
-  validatorCompiler: ({ schema, method, url, httpPart }) => (data) => {
-    if (data.password !== data.passwordConfirmation) {
-      return {
-        error: Error('Password confirmation is not equal the password'),
-      };
-    }
-    try {
-      const result = schema.validateSync(data);
-      return { value: result };
-    } catch (e) {
-      return { error: e };
-    }
-  },
-}, (req, res) => {
-  const { name, email, password, passwordConfirmation } = req.body;
-
-  if (req.validationError) {
-    const data = {
-      name, email, password, passwordConfirmation,
-      error: req.validationError,
-    };
-
-    res.view('src/views/users/new', data);
-    return;
-  }
-
-  const user = {
-    name,
-    email,
-    password,
-  };
-
-  state.users.push(user);
-
-  res.redirect('/users');
-});
-
-app.get('/users/:name', (req, res) => {
-  const { name } = req.params
-  const user = state.users.find(({ name: userName }) => userName === name);
-  if (!user) {
-    res.code(404).send({ message: 'User not found' });
-    return;
-  }
-  const data = {
-    user,
-  };
-  res.view('src/views/users/show', data);
-  
-});
 
 app.listen({ port }, () => {
   console.log(`Example app listening on port ${port}`);
