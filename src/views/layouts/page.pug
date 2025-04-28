@@ -4,9 +4,9 @@ html
     meta(name='viewport', content='width=device-width, initial-scale=1')
   body
     div
-      a(href='/courses') Courses
+      a(href=routes.coursesPath()) Courses
     div
-      a(href='/users') Users
+      a(href=routes.usersPath()) Users
     block content
         
     block footer

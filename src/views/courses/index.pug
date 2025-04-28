@@ -2,7 +2,7 @@ extends ../layouts/page.pug
 
 block content
   div
-    a(href='/courses/new') New Course
+    a(href=routes.newCoursePath()) New Course
   div
     form(action='/courses', method='get')
       input(type='search', name='term', value = term)
@@ -10,4 +10,4 @@ block content
 
   each course in courses
     div
-      a(href='/courses/'+ course.id)= course.title
+      a(href=routes.coursePath(course.id))= course.title

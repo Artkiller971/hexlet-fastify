@@ -26,6 +26,14 @@ const state = {
   users: [],
 };
 
+const routes = {
+  usersPath: () => '/u',
+  newUserPath: () => '/users/new',
+  coursesPath: () => '/courses',
+  coursePath: (id) => `/courses/${id}`,
+  newCoursePath: () => '/courses/new',
+}
+
 const app = fastify();
 const port = 3000;
 
@@ -34,20 +42,20 @@ await app.register(formbody);
 
 app.get('/', (req, res) => res.view('src/views/index'));
 
-app.get('/courses', (req, res) => {
+app.get(routes.coursesPath(), (req, res) => {
   const term = req.query.term ?? '';
 
 
   const data = state.courses.filter((course) => course.title.toLowerCase().includes(term.toLowerCase())
    || course.description.toLowerCase().includes(term.toLowerCase()));
-  res.view('src/views/courses/index', { term, courses: data });
+  res.view('src/views/courses/index', { term, courses: data, routes });
 });
 
-app.get('/courses/new', (req, res) => {
+app.get(routes.newCoursePath(), (req, res) => {
   res.view('src/views/courses/new');
 });
 
-app.post('/courses', {
+app.post(routes.coursesPath(), {
   attachValidation: true,
   schema: {
     body: yup.object({
@@ -86,10 +94,10 @@ app.post('/courses', {
 
   state.courses.push(course);
 
-  res.redirect('/courses');
+  res.redirect(routes.coursesPath());
 })
 
-app.get('/courses/:id', (req, res) => {
+app.get(routes.coursePath(':id'), (req, res) => {
   const { id } = req.params
   const course = state.courses.find(({ id: courseId }) => courseId === parseInt(id));
   if (!course) {
@@ -102,19 +110,19 @@ app.get('/courses/:id', (req, res) => {
   res.view('src/views/courses/show', data);
 });
 
-app.get('/users/new', (req, res) => {
+app.get(routes.newUserPath(), (req, res) => {
   res.view('src/views/users/new');
 });
 
-app.get('/users', (req, res) => {
+app.get(routes.usersPath(), (req, res) => {
   const term = req.query.term ?? '';
 
 
   const data = state.users.filter((user) => user.name.toLowerCase().includes(term.toLowerCase()))
-  res.view('src/views/users/index', { term, users: data });
+  res.view('src/views/users/index', { term, users: data, routes });
 });
 
-app.post('/users', {
+app.post(routes.usersPath(), {
   attachValidation: true,
   schema: {
     body: yup.object({

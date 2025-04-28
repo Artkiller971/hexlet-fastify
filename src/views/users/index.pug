@@ -2,7 +2,7 @@ extends ../layouts/page.pug
 
 block content
   div
-    a(href='/users/new') New User
+    a(href=routes.newUserPath()) New User
   div
     form(action='/users', method='get')
       input(type='search', name='term', value = term)
