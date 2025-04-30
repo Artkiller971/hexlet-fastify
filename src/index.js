@@ -1,9 +1,8 @@
 import fastify from 'fastify';
 import view from '@fastify/view';
 import formbody from '@fastify/formbody';
+import fastifyCookie from '@fastify/cookie';
 import pug from 'pug';
-import sanitize from 'sanitize-html';
-import yup from 'yup';
 import addRoutes from './routes/index.js'
 
 const state = {
@@ -34,10 +33,21 @@ const port = 3000;
 
 await app.register(view, { engine: { pug } });
 await app.register(formbody);
+await app.register(fastifyCookie);
 
 await addRoutes(app, state);
 
-app.get('/', (req, res) => res.view('src/views/index'));
+app.get('/', (req, res) => {
+  const visited = req.cookies.visited;
+
+  const templateData = {
+    visited,
+  }
+
+  res.cookie('visited', true);
+
+  res.view('src/views/index', { templateData });
+});
 
 app.listen({ port }, () => {
   console.log(`Example app listening on port ${port}`);

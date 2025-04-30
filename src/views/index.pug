@@ -1,8 +1,10 @@
-doctype html
-html(lang='en')
-head
+html(lang="ru")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
     title Hello Hexlet!
-body
+  body
     main
-    h1 Hello, World!
-    p Fastify + Pug
+      h1 Привет Хекслет!
+      if !templateData.visited
+        | Это сообщение показывается только один раз. Если вы хотите увидеть его снова, сотрите куки
