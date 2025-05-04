@@ -1,11 +1,12 @@
 import yup from 'yup';
 import routesF from './routes.js';
+import encrypt from '../encrypt.js';
 
 const routes = routesF();
 
 export default (app, state) => {
   app.get(routes.newUserPath(), (req, res) => {
-    res.view('src/views/users/new');
+    res.view('src/views/users/new', { flash: res.flash() });
   });
   
   app.get(routes.usersPath(), (req, res) => {
@@ -13,7 +14,7 @@ export default (app, state) => {
   
   
     const data = state.users.filter((user) => user.name.toLowerCase().includes(term.toLowerCase()))
-    res.view('src/views/users/index', { term, users: data, routes });
+    res.view('src/views/users/index', { term, users: data, routes, flash: res.flash() });
   });
   
   app.post(routes.usersPath(), {
@@ -47,21 +48,48 @@ export default (app, state) => {
         name, email, password, passwordConfirmation,
         error: req.validationError,
       };
-  
-      res.view('src/views/users/new', data);
+      
+      req.flash('error', { type: 'error', message: 'Ошибка регистрации'});
+      res.view('src/views/users/new', { data, flash: res.flash()});
       return;
     }
   
     const user = {
       name,
       email,
-      password,
+      passwordDigest: encrypt(password),
     };
   
     state.users.push(user);
+
+    req.flash('success', { type: 'success', message: 'Пользователь зарегистрирован'});
   
     res.redirect('/users');
   });
+
+  app.get('/login', (req, res) => {
+    res.view('src/views/users/login');
+  })
+
+  app.post('/session', (req, res) => {
+    const { email, password } = req.body;
+
+    const user = state.users.find((user) => user.email === email); {
+      if (!user) {
+        res.view('src/views/users/login', { error: new Error('No match for this email')});
+      }
+    }
+
+    if (user.passwordDigest === encrypt(password)) {
+      req.session.username = user.name;
+      res.redirect('/');
+    };
+  })
+
+  app.post('/session/delete', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+  })
   
   app.get('/users/:name', (req, res) => {
     const { name } = req.params

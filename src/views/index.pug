@@ -1,10 +1,14 @@
-html(lang="ru")
-  head
-    meta(charset="utf-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1")
-    title Hello Hexlet!
-  body
-    main
-      h1 Привет Хекслет!
-      if !templateData.visited
-        | Это сообщение показывается только один раз. Если вы хотите увидеть его снова, сотрите куки
+extends layouts/page.pug
+
+block content
+  h1 Привет Хекслет!
+  if !templateData.visited
+    | Это сообщение показывается только один раз. Если вы хотите увидеть его снова, сотрите куки
+  if !templateData.username
+    h1 Добро пожаловать гость
+    a(href='/login') Войти
+  else
+    h1 Добро пожаловать #{templateData.username}
+    form(action='/session/delete', method='post')
+      div
+        input(type='submit', value='Выйти')

@@ -2,6 +2,10 @@ html
   body
     if error
       p= error.message
+    for messages in flash
+      each message in messages
+        .alert(class=`alert-${message.type}`)
+          = message.message
 
 
     form(action = '/users', method = 'post')
